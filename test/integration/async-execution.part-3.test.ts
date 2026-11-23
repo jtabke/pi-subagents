@@ -1791,8 +1791,8 @@ syncBuiltinESMExports();
 		assert.equal((await waitForMockPiRuntime(mockPi, 0)).forkCacheKey, deriveForkPromptCacheKey("session-cache-parent"));
 	});
 
-	it("follows up an async run whose recovery descriptor includes fast", { skip: !isAsyncAvailable() || !createSubagentExecutor ? "jiti or executor not available" : undefined }, async () => {
-		const luna = { provider: "openai-codex", id: "gpt-5.6-luna", fullId: "openai-codex/gpt-5.6-luna" };
+	it("follows up an async OpenAI run whose recovery descriptor includes fast", { skip: !isAsyncAvailable() || !createSubagentExecutor ? "jiti or executor not available" : undefined }, async () => {
+		const astra = { provider: "openai", id: "gpt-6.2-astra", fullId: "openai/gpt-6.2-astra" };
 		mockPi.onCall({ output: "Initial async work" });
 		const sourceId = `async-revive-fast-${Date.now().toString(36)}`;
 		const sessionFile = path.join(tempDir, "sessions", "fast.jsonl");
@@ -1801,14 +1801,14 @@ syncBuiltinESMExports();
 		executeAsyncSingle(sourceId, {
 			agent: "worker",
 			task: "Initial work",
-			agentConfig: makeAgent("worker", { model: luna.fullId }),
+			agentConfig: makeAgent("worker", { model: astra.fullId }),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-123" },
 			artifactConfig: { enabled: false, includeInput: false, includeOutput: false, includeJsonl: false, includeMetadata: false, cleanupDays: 7 },
 			shareEnabled: false,
 			sessionRoot: path.join(tempDir, "sessions"),
 			sessionFile,
-			modelOverride: luna.fullId,
-			availableModels: [luna],
+			modelOverride: astra.fullId,
+			availableModels: [astra],
 			fast: true,
 			maxSubagentDepth: 2,
 		});
@@ -1821,7 +1821,7 @@ syncBuiltinESMExports();
 			{ action: "resume", id: sourceId, message: "Continue" },
 			new AbortController().signal,
 			undefined,
-			{ ...makeMinimalCtx(tempDir), modelRegistry: { getAvailable: () => [luna] } },
+			{ ...makeMinimalCtx(tempDir), modelRegistry: { getAvailable: () => [astra] } },
 		) as AsyncExecutionResult;
 		assert.ok(!result.isError, result.content[0]?.text);
 		assert.ok(result.details.asyncId);

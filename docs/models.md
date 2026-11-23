@@ -88,9 +88,9 @@ For a persistent role override:
 
 ## Fast mode
 
-Set `fast: true` on a run, in agent frontmatter, or in `subagents.agentOverrides.<name>.fast` to request the OpenAI priority service tier for supported native OpenAI-Codex children. This can use a higher quota tier or cost more. It is off by default.
+Set `fast: true` on a run, in agent frontmatter, or in `subagents.agentOverrides.<name>.fast` to request the OpenAI priority service tier for a native child. This can use a higher quota tier or cost more. It is off by default.
 
-Fast mode fails before launch unless the resolved model is a native `openai-codex/*` model. External runners, Anthropic models, and other providers do not use fast mode.
+Fast mode accepts resolved `openai/*` and `openai-codex/*` models. It adds the priority tier only to OpenAI Responses requests using ChatGPT sign-in or to legacy OpenAI-Codex Responses requests. OpenAI API-key requests are unchanged. External runners and other providers do not support fast mode.
 
 ## Recommended model tiering (optional)
 

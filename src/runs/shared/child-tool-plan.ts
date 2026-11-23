@@ -47,8 +47,7 @@ const SUBAGENT_RUNTIME_EXTENSION_PATHS = new Set([
 export function isSubagentRuntimeExtensionPath(extensionPath: string): boolean {
 	return SUBAGENT_RUNTIME_EXTENSION_PATHS.has(path.normalize(extensionPath));
 }
-// Priority tier is an OpenAI-Codex request field; other providers reject or ignore it.
-const FAST_MODE_PROVIDER_PREFIX = "openai-codex/";
+const FAST_MODE_PROVIDER_PREFIXES = ["openai/", "openai-codex/"] as const;
 const OPENAI_PROMPT_CACHE_KEY_MAX_LENGTH = 64;
 export function deriveForkPromptCacheKey(parentSessionId: string | undefined): string | undefined {
 	const parent = parentSessionId?.trim();
@@ -107,11 +106,11 @@ function resolveFastModeExtension(input: Pick<ResolvePiLaunchToolPlanInput, "fas
 	const candidates = (input.model ? [input.model] : [])
 		.map(stripThinkingSuffix);
 	if (candidates.length === 0) {
-		throw new Error(`fast mode requires an explicit supported native OpenAI-Codex model${input.agentName ? ` for agent '${input.agentName}'` : ""}.`);
+		throw new Error(`fast mode requires a resolved native OpenAI or OpenAI-Codex model${input.agentName ? ` for agent '${input.agentName}'` : ""}.`);
 	}
-	const unsupported = candidates.filter((model) => !model.startsWith(FAST_MODE_PROVIDER_PREFIX));
+	const unsupported = candidates.filter((model) => !FAST_MODE_PROVIDER_PREFIXES.some((prefix) => model.startsWith(prefix)));
 	if (unsupported.length > 0) {
-		throw new Error(`fast mode supports only native ${FAST_MODE_PROVIDER_PREFIX}* models; unsupported model${unsupported.length === 1 ? "" : "s"}: ${unsupported.join(", ")}.`);
+		throw new Error(`fast mode supports only native openai/* and openai-codex/* models; unsupported model${unsupported.length === 1 ? "" : "s"}: ${unsupported.join(", ")}.`);
 	}
 	return [resolveRuntimeModulePath(RUNTIME_EXTENSION_DIR, "fast-mode-extension")];
 }

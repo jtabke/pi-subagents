@@ -1879,7 +1879,7 @@ Do work
 		assert.equal(worker?.extraFields?.fast, undefined);
 	});
 
-	it("adds the fast extension only for native OpenAI-Codex models", () => {
+	it("adds the fast extension only for native OpenAI and OpenAI-Codex models", () => {
 		const launch = {
 			host: "parent" as const,
 			cwd: process.cwd(),
@@ -1891,12 +1891,13 @@ Do work
 			childIndex: 0,
 			fast: true,
 		};
-		const allowed = buildInProcessChildLaunch({ ...launch, model: "openai-codex/gpt-6-sol:low" });
-
-		assert.ok(allowed.toolPlan.runtimeExtensions.some((extensionPath) => extensionPath.endsWith("fast-mode-extension.ts")));
-		assert.deepEqual(allowed.session.hooks.map((hook) => hook.name), ["pi-subagents:prompt-runtime", "pi-subagents:fast-mode", "pi-subagents:prompt-boundary"]);
+		for (const model of ["openai/gpt-6.2-astra:high", "openai-codex/gpt-6-sol:low"]) {
+			const allowed = buildInProcessChildLaunch({ ...launch, model });
+			assert.ok(allowed.toolPlan.runtimeExtensions.some((extensionPath) => extensionPath.endsWith("fast-mode-extension.ts")));
+			assert.deepEqual(allowed.session.hooks.map((hook) => hook.name), ["pi-subagents:prompt-runtime", "pi-subagents:fast-mode", "pi-subagents:prompt-boundary"]);
+		}
 		assert.throws(() => buildInProcessChildLaunch({ ...launch, model: "anthropic/claude-sonnet-4" }), /fast mode supports only/);
-		assert.throws(() => buildInProcessChildLaunch({ ...launch, model: "openai/gpt-6-sol" }), /fast mode supports only/);
+		assert.throws(() => buildInProcessChildLaunch({ ...launch, model: "openrouter/openai/gpt-6.2-astra" }), /fast mode supports only/);
 	});
 });
 
